@@ -1,0 +1,37 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "base": {
+      "node": "24.11.1",
+      "env": {
+        "EAS_SKIP_AUTO_FINGERPRINT": "1",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://leudzrboihuictxwqyja.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxldWR6cmJvaWh1aWN0eHdxeWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MjM1MzEsImV4cCI6MjA5OTA5OTUzMX0.IAq-sxDfmNeTzNQmHj7gthRaycQu_2K4JZdO0EA-VvE",
+        "EXPO_PUBLIC_HCAPTCHA_SITE_KEY": "89d8b814-e91a-430a-8ca0-95f89142c5fc"
+      }
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "apk": {
+      "extends": "base",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  }
+}

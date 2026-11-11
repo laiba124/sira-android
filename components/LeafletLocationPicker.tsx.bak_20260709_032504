@@ -1,0 +1,133 @@
+import React, { useMemo } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { WebView, WebViewMessageEvent } from 'react-native-webview';
+
+import type { LatLng } from '../types/incident';
+
+type Props = {
+  coordinate: LatLng;
+  onChange: (coordinate: LatLng) => void;
+};
+
+function buildLeafletHtml(coordinate: LatLng) {
+  const lat = Number(coordinate.latitude.toFixed(7));
+  const lng = Number(coordinate.longitude.toFixed(7));
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    html, body, #map { height: 100%; width: 100%; margin: 0; padding: 0; background: #07111f; }
+    .leaflet-control-attribution { font-size: 10px; }
+    .hint {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 1000;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(5, 13, 26, 0.84);
+      color: white;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 12px;
+      line-height: 16px;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.28);
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div class="hint">Tap the map or drag the pin to correct the incident location.</div>
+
+  <script>
+    const initialLat = ${lat};
+    const initialLng = ${lng};
+
+    const map = L.map('map', {
+      zoomControl: true,
+      attributionControl: true,
+      preferCanvas: true
+    }).setView([initialLat, initialLng], 16);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+
+    function sendLocation(latlng) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({
+        type: 'SIRA_LOCATION_CHANGED',
+        latitude: Number(latlng.lat.toFixed(7)),
+        longitude: Number(latlng.lng.toFixed(7))
+      }));
+    }
+
+    map.on('click', function(event) {
+      marker.setLatLng(event.latlng);
+      sendLocation(event.latlng);
+    });
+
+    marker.on('dragend', function() {
+      sendLocation(marker.getLatLng());
+    });
+
+    setTimeout(function() { map.invalidateSize(); }, 350);
+  </script>
+</body>
+</html>`;
+}
+
+export default function LeafletLocationPicker({ coordinate, onChange }: Props) {
+  const html = useMemo(() => buildLeafletHtml(coordinate), [coordinate.latitude, coordinate.longitude]);
+
+  function handleMessage(event: WebViewMessageEvent) {
+    try {
+      const payload = JSON.parse(event.nativeEvent.data);
+      if (payload?.type !== 'SIRA_LOCATION_CHANGED') return;
+
+      onChange({
+        latitude: Number(payload.latitude),
+        longitude: Number(payload.longitude),
+      });
+    } catch {
+      // Ignore malformed WebView messages.
+    }
+  }
+
+  return (
+    <View style={styles.container}>
+      <WebView
+        originWhitelist={['*']}
+        source={{ html }}
+        onMessage={handleMessage}
+        javaScriptEnabled
+        domStorageEnabled
+        geolocationEnabled
+        mixedContentMode="always"
+        setSupportMultipleWindows={false}
+        style={styles.webView}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    height: 330,
+    overflow: 'hidden',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#1f334d',
+    backgroundColor: '#07111f',
+  },
+  webView: {
+    flex: 1,
+    backgroundColor: '#07111f',
+  },
+});

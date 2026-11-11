@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "SIRA",
+    "slug": "sira-android",
+    "scheme": "sira",
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "SIRA uses your GPS location to geo-tag incident reports."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "SIRA uses selected photos as incident evidence."
+        }
+      ]
+    ],
+    "android": {
+      "package": "pk.zong.sira"
+    }
+  }
+}

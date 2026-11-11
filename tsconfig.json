@@ -1,7 +1,8 @@
-{
-  "extends": "expo/tsconfig.base",
+﻿{
+  "extends": "./node_modules/expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "jsx": "react-native",
     "paths": {
       "@/*": [
         "./src/*"
@@ -16,5 +17,14 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".expo",
+    "dist",
+    "build",
+    ".git",
+    "SIRA-code-dump-*",
+    "backup-*"
   ]
 }
